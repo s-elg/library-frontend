@@ -1,37 +1,13 @@
 <template>
   <div class="catalog-page">
-    <!-- Üst Menü (Header) -->
-    <header class="top-nav">
-      <div class="logo-container">
-        <!-- İkon yerine geçici bir emoji/sembol, projende SVG kullanabilirsin -->
-        <span class="logo-icon">🌿</span>
-        <span class="logo-text">Terra Library</span>
-      </div>
-
-      <nav class="nav-links">
-        <button class="nav-item active">Catalog</button>
-        <button class="nav-item">My Books</button>
-        <button class="nav-item">Profile</button>
-      </nav>
-
-      <div class="header-actions">
-        <div class="search-wrapper">
-          <span class="search-icon">🔍</span>
-          <input
-            v-model="searchTerm"
-            class="header-search-input"
-            type="text"
-            placeholder="Kitap, yazar veya ISBN ara..."
-          />
-        </div>
-        <button class="btn-signout" @click="handleLogout">
-          <span class="signout-icon">🚪</span> Sign Out
-        </button>
-      </div>
-    </header>
+    <TopNavBar
+      active="catalog"
+      v-model:searchTerm="searchTerm"
+      @logout="handleLogout"
+    />
 
     <div class="catalog-layout">
-      <!-- Sol sidebar: kategori filtresi -->
+      <!-- Sol sidebar: kategori filtresi + durum filtreleri (sadece bu ekranda kullanıldığı için ayrı component yapılmadı) -->
       <aside class="sidebar">
         <div class="sidebar-card">
           <div class="sidebar-header">
@@ -46,7 +22,7 @@
                 @click="selectCategory(null)"
               >
                 Tümü
-                <span class="category-count">1240</span>
+                <span class="category-count">{{ pageResult?.totalCount ?? '-' }}</span>
               </button>
             </li>
             <li v-for="category in categories" :key="category.id">
@@ -88,7 +64,6 @@
         </div>
       </aside>
 
-      <!-- Sağ ana alan: kitap grid -->
       <main class="catalog-main">
         <div class="page-title-section">
           <div class="title-group">
@@ -119,32 +94,11 @@
           />
         </div>
 
-        <!-- Sayfalama -->
-        <div v-if="pageResult && pageResult.totalPages > 1" class="pagination">
-          <button
-            class="page-btn page-arrow"
-            :disabled="pageNumber === 1"
-            @click="pageNumber--"
-          >
-            ‹
-          </button>
-          <button
-            v-for="p in pageResult.totalPages"
-            :key="p"
-            class="page-btn"
-            :class="{ active: p === pageNumber }"
-            @click="pageNumber = p"
-          >
-            {{ p }}
-          </button>
-          <button
-            class="page-btn page-arrow"
-            :disabled="pageNumber === pageResult.totalPages"
-            @click="pageNumber++"
-          >
-            ›
-          </button>
-        </div>
+        <Pagination
+          v-if="pageResult"
+          v-model:currentPage="pageNumber"
+          :totalPages="pageResult.totalPages"
+        />
       </main>
     </div>
   </div>
@@ -157,15 +111,17 @@ import { useAuthStore } from '../stores/auth'
 import { bookService } from '../services/bookService'
 import { categoryService } from '../services/categoryService'
 import BookCard from '../components/BookCard.vue'
+import TopNavBar from '../components/layout/TopNavBar.vue'
+import Pagination from '../components/common/Pagination.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const categories = ref([])
 const selectedCategoryId = ref(null)
-const searchTerm = ref('') // Arama geri geldi (Header'da)
+const searchTerm = ref('')
 const onlyAvailable = ref(false)
-const newReleases = ref(false) 
+const newReleases = ref(false)
 const pageNumber = ref(1)
 const pageSize = 6
 const pageResult = ref(null)
@@ -175,10 +131,12 @@ const selectedSortOption = ref('newest')
 let searchDebounceTimer = null
 
 async function loadCategories() {
+  // NOT: bookCount backend'de henüz yok, geçici olarak rastgele üretiliyor.
+  // Gerçek sayı istenirse CategoryDto'ya bookCount eklenip backend'de hesaplanmalı.
   const fetchedCategories = await categoryService.getAll()
-  categories.value = fetchedCategories.map(cat => ({
+  categories.value = fetchedCategories.map((cat) => ({
     ...cat,
-    bookCount: Math.floor(Math.random() * 300) + 100 
+    bookCount: Math.floor(Math.random() * 300) + 100,
   }))
 }
 
@@ -211,7 +169,7 @@ const displayedBooks = computed(() => {
 
 function selectCategory(categoryId) {
   selectedCategoryId.value = categoryId
-  searchTerm.value = '' 
+  searchTerm.value = ''
   pageNumber.value = 1
 }
 
@@ -224,7 +182,6 @@ async function handleLogout() {
   router.push('/login')
 }
 
-// Arama kutusuna yazıldığında debounced API çağrısı
 watch(searchTerm, () => {
   clearTimeout(searchDebounceTimer)
   searchDebounceTimer = setTimeout(() => {
@@ -250,109 +207,13 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-/* Header Tasarımı */
-.top-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 24px;
-  margin-bottom: 32px;
-  border-bottom: 1px solid var(--color-outline-variant);
-}
-
-.logo-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-heading);
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: var(--color-primary);
-}
-
-.nav-links {
-  display: flex;
-  gap: 32px;
-}
-
-.nav-item {
-  background: none;
-  border: none;
-  font-size: 15px;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  padding: 8px 0;
-  border-bottom: 2px solid transparent;
-}
-
-.nav-item:hover {
-  color: var(--color-text);
-}
-
-.nav-item.active {
-  color: var(--color-primary);
-  font-weight: 600;
-  border-bottom-color: var(--color-primary);
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.search-wrapper {
-  display: flex;
-  align-items: center;
-  background-color: var(--color-outline-variant);
-  border-radius: 999px;
-  padding: 8px 16px;
-  gap: 8px;
-}
-
-.search-icon {
-  font-size: 14px;
-  opacity: 0.6;
-}
-
-.header-search-input {
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 14px;
-  width: 200px;
-  color: var(--color-text);
-}
-
-.header-search-input::placeholder {
-  color: var(--color-text-muted);
-}
-
-.btn-signout {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background-color: var(--color-outline-variant);
-  color: var(--color-primary);
-  border: none;
-  border-radius: 999px;
-  padding: 8px 16px;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.btn-signout:hover {
-  background-color: rgba(74, 124, 89, 0.1); /* --color-primary şeffaf hali */
-}
-
-/* İçerik Düzeni */
 .catalog-layout {
   display: flex;
   gap: 32px;
   align-items: flex-start;
 }
 
+/* Sidebar */
 .sidebar {
   width: 260px;
   flex-shrink: 0;
@@ -471,6 +332,7 @@ onMounted(() => {
   color: transparent;
 }
 
+/* Main content */
 .catalog-main {
   flex: 1;
   min-width: 0;
@@ -533,42 +395,5 @@ onMounted(() => {
   color: var(--color-text-muted);
   padding: 40px 0;
   text-align: center;
-}
-
-.pagination {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 32px;
-}
-
-.page-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid var(--color-outline-variant);
-  background-color: var(--color-outline-variant);
-  cursor: pointer;
-  color: var(--color-text-muted);
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.page-btn.active {
-  background-color: var(--color-primary);
-  color: white;
-  border-color: var(--color-primary);
-}
-
-.page-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.page-btn.page-arrow {
-  font-size: 1.2rem;
-  color: var(--color-text);
 }
 </style>
