@@ -54,11 +54,11 @@ const coverStyle = computed(() => {
 
 <style scoped>
 .book-card {
-  background-color: var(--color-surface, #ffffff);
-  border-radius: var(--radius-lg, 12px);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(46, 50, 48, 0.06);
-  border: 1px solid rgba(196, 200, 188, 0.3);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--color-outline-variant);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
@@ -96,11 +96,11 @@ const coverStyle = computed(() => {
 }
 
 .status-available {
-  color: var(--color-primary, #4a7c59);
+  color: var(--color-primary);
 }
 
 .status-loaned {
-  color: var(--color-text-muted, #6b6358);
+  color: var(--color-text-muted);
 }
 
 .card-body {
@@ -116,28 +116,28 @@ const coverStyle = computed(() => {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-tertiary, #705c30);
+  color: var(--color-tertiary);
   margin: 0;
 }
 
 .book-title {
-  font-family: var(--font-headline, 'Literata', serif);
+  font-family: var(--font-heading);
   font-size: 18px;
   font-weight: 700;
   margin: 4px 0 0;
-  color: var(--color-text, #2e3230);
+  color: var(--color-text);
 }
 
 .book-author {
   font-size: 14px;
-  color: var(--color-text-muted, #6b6358);
+  color: var(--color-text-muted);
   margin: 0 0 12px;
 }
 
 .card-footer {
   margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid rgba(196, 200, 188, 0.3);
+  border-top: 1px solid var(--color-outline-variant);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -145,7 +145,7 @@ const coverStyle = computed(() => {
 
 .copies-info {
   font-size: 13px;
-  color: var(--color-text-muted, #6b6358);
+  color: var(--color-text-muted);
 }
 
 .detail-btn {
@@ -154,13 +154,13 @@ const coverStyle = computed(() => {
   border-radius: 999px;
   border: none;
   background-color: rgba(74, 124, 89, 0.1);
-  color: var(--color-primary, #4a7c59);
+  color: var(--color-primary);
   cursor: pointer;
   font-weight: bold;
 }
 
 .detail-btn:hover {
-  background-color: var(--color-primary, #4a7c59);
+  background-color: var(--color-primary);
   color: white;
 }
 </style>
