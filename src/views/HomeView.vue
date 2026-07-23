@@ -225,9 +225,9 @@ onMounted(() => {
 .sidebar-card {
   background-color: var(--color-surface);
   border-radius: var(--radius-md);
-  padding: 20px;
+  padding: var(--space-card-padding); /* '20px' yerine tasarım değişkeni atandı */
   box-shadow: var(--shadow-soft);
-  border: 1px solid var(--color-outline-variant);
+  border: none; /* '1px solid var(--color-outline-variant)' silindi */
 }
 
 .sidebar-header {

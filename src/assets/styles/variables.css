@@ -2,12 +2,16 @@
   /* Colors */
   --color-primary: #4a7c59;
   --color-primary-hover: #3f6b4c;
+  --color-primary-soft: rgba(74, 124, 89, 0.1);
+  --color-primary-softer: rgba(74, 124, 89, 0.06);
   --color-background: #faf6f0;
   --color-tertiary: #705c30;
-  --color-surface: #ffffff;
+  /* Steril beyaz yerine sıcak krem */
+  --color-surface: #fdfbf7;
   --color-text: #2e3230;
   --color-text-muted: #6b6a63;
-  --color-outline-variant: rgba(46, 50, 48, 0.12);
+  /* Sınır çizgileri için çok hafif yeşil/sarı alt tonlu outline */
+  --color-outline-variant: rgba(74, 124, 89, 0.15);
   --color-error: #b3413a;
 
   /* Typography */
@@ -18,10 +22,14 @@
   /* Radius */
   --radius-md: 12px;
   --radius-sm: 8px;
+  --radius-pill: 999px;
 
   /* Elevation */
   --shadow-soft: 0 4px 20px rgba(46, 50, 48, 0.06);
+  --shadow-hover: 0 8px 30px rgba(74, 124, 89, 0.12);
 
   /* Spacing */
   --space-card-padding: 24px;
+  --space-gap-sm: 8px;
+  --space-gap-md: 16px;
 }
