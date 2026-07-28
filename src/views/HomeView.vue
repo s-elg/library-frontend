@@ -103,7 +103,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { bookService } from '../services/bookService'
@@ -195,6 +195,12 @@ watch([selectedCategoryId, pageNumber, newReleases, selectedSortOption], () => {
 onMounted(() => {
   loadCategories()
   loadBooks()
+})
+
+onUnmounted(() => {
+  if (searchDebounceTimer) {
+    clearTimeout(searchDebounceTimer)
+  }
 })
 </script>
 
