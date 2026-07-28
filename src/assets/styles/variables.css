@@ -6,11 +6,9 @@
   --color-primary-softer: rgba(74, 124, 89, 0.06);
   --color-background: #faf6f0;
   --color-tertiary: #705c30;
-  /* Steril beyaz yerine sıcak krem */
   --color-surface: #fdfbf7;
   --color-text: #2e3230;
   --color-text-muted: #6b6a63;
-  /* Sınır çizgileri için çok hafif yeşil/sarı alt tonlu outline */
   --color-outline-variant: rgba(74, 124, 89, 0.15);
   --color-error: #b3413a;
 
@@ -23,6 +21,7 @@
   --radius-md: 12px;
   --radius-sm: 8px;
   --radius-pill: 999px;
+  --radius-lg: 20px; 
 
   /* Elevation */
   --shadow-soft: 0 4px 20px rgba(46, 50, 48, 0.06);

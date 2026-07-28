@@ -1,17 +1,15 @@
 <template>
-  <div class="catalog-page">
-    <TopNavBar
-      active="catalog"
-      v-model:searchTerm="searchTerm"
-      @logout="handleLogout"
-    />
-
+  <MainLayout
+    active="catalog"
+    v-model:searchTerm="searchTerm"
+    @logout="handleLogout"
+  >
     <div class="catalog-layout">
       <!-- Sol sidebar: kategori filtresi + durum filtreleri (sadece bu ekranda kullanıldığı için ayrı component yapılmadı) -->
       <aside class="sidebar">
         <div class="sidebar-card">
           <div class="sidebar-header">
-            <span class="sidebar-icon">🔖</span>
+            <span class="material-symbols-outlined sidebar-icon">category</span>
             <h2 class="sidebar-title">Kategoriler</h2>
           </div>
           <ul class="category-list">
@@ -40,14 +38,14 @@
 
         <div class="sidebar-card">
           <div class="sidebar-header">
-            <span class="sidebar-icon">⚏</span>
+            <span class="material-symbols-outlined sidebar-icon">tune</span>
             <h2 class="sidebar-title">Durum</h2>
           </div>
           <label class="checkbox-row custom-filter">
             <input type="checkbox" v-model="onlyAvailable" />
             <span class="custom-control-label">
               <span class="filter-icon" :class="onlyAvailable ? 'green-check' : 'open-circle'">
-                {{ onlyAvailable ? '✔' : '' }}
+                <span v-if="onlyAvailable" class="material-symbols-outlined">check</span>
               </span>
               Sadece Uygun Olanlar
             </span>
@@ -56,7 +54,7 @@
             <input type="checkbox" v-model="newReleases" />
             <span class="custom-control-label">
               <span class="filter-icon" :class="newReleases ? 'green-check' : 'open-circle'">
-                {{ newReleases ? '✔' : '' }}
+                <span v-if="newReleases" class="material-symbols-outlined">check</span>
               </span>
               Yeni Gelenler
             </span>
@@ -101,7 +99,7 @@
         />
       </main>
     </div>
-  </div>
+  </MainLayout>
 </template>
 
 <script setup>
@@ -111,7 +109,7 @@ import { useAuthStore } from '../stores/auth'
 import { bookService } from '../services/bookService'
 import { categoryService } from '../services/categoryService'
 import BookCard from '../components/BookCard.vue'
-import TopNavBar from '../components/layout/TopNavBar.vue'
+import MainLayout from '../components/layout/MainLayout.vue'
 import Pagination from '../components/common/Pagination.vue'
 
 const router = useRouter()
@@ -201,11 +199,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.catalog-page {
-  padding: var(--space-card-padding);
-  max-width: 1400px;
-  margin: 0 auto;
-}
+/* .catalog-page kaldırıldı — padding/max-width artık MainLayout'un .app-content'inde yönetiliyor */
 
 .catalog-layout {
   display: flex;
@@ -225,9 +219,9 @@ onMounted(() => {
 .sidebar-card {
   background-color: var(--color-surface);
   border-radius: var(--radius-md);
-  padding: var(--space-card-padding); /* '20px' yerine tasarım değişkeni atandı */
+  padding: var(--space-card-padding);
   box-shadow: var(--shadow-soft);
-  border: none; /* '1px solid var(--color-outline-variant)' silindi */
+  border: none;
 }
 
 .sidebar-header {
@@ -238,7 +232,7 @@ onMounted(() => {
 }
 
 .sidebar-icon {
-  font-size: 1.2rem;
+  font-size: 20px;
   color: var(--color-tertiary);
 }
 
@@ -264,12 +258,13 @@ onMounted(() => {
   width: 100%;
   text-align: left;
   padding: 8px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: none;
   background: transparent;
   color: var(--color-text);
   cursor: pointer;
   font-size: 14px;
+  font-family: var(--font-body);
 }
 
 .category-item:hover {
@@ -286,13 +281,13 @@ onMounted(() => {
   font-size: 12px;
   padding: 2px 6px;
   background-color: var(--color-outline-variant);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--color-text-muted);
 }
 
 .category-item.active .category-count {
-  background-color: white;
-  color: var(--color-primary);
+  background-color: rgba(255, 255, 255, 0.25);
+  color: white;
 }
 
 .checkbox-row.custom-filter {
@@ -319,17 +314,20 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.filter-icon .material-symbols-outlined {
+  font-size: 12px;
+  color: white;
 }
 
 .green-check {
   background-color: var(--color-primary);
-  color: white;
 }
 
 .open-circle {
   border: 1px solid var(--color-outline-variant);
-  color: transparent;
 }
 
 /* Main content */
@@ -370,15 +368,16 @@ onMounted(() => {
 
 .sort-dropdown-container {
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--color-outline-variant);
-  background-color: var(--color-outline-variant);
+  background-color: var(--color-surface);
 }
 
 .sort-dropdown {
   border: none;
   background: transparent;
   color: var(--color-text);
+  font-family: var(--font-body);
   font-size: 14px;
   appearance: none;
   cursor: pointer;

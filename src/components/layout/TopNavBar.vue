@@ -1,7 +1,7 @@
 <template>
   <header class="top-nav">
     <div class="logo-container">
-      <span class="logo-icon">🌿</span>
+      <span class="material-symbols-outlined logo-icon">eco</span>
       <span class="logo-text">Terra Library</span>
     </div>
 
@@ -9,7 +9,6 @@
       <router-link :to="{ name: 'Home' }" class="nav-item" :class="{ active: active === 'catalog' }">
         Catalog
       </router-link>
-      <!-- Bu rotalar henüz oluşturulmadı, ileride eklenince router-link'e çevrilecek -->
       <button class="nav-item" :class="{ active: active === 'myBooks' }" disabled title="Yakında">
         My Books
       </button>
@@ -20,7 +19,7 @@
 
     <div class="header-actions">
       <div v-if="showSearch" class="search-wrapper">
-        <span class="search-icon">🔍</span>
+        <span class="material-symbols-outlined search-icon">search</span>
         <input
           :value="searchTerm"
           class="header-search-input"
@@ -30,7 +29,7 @@
         />
       </div>
       <button class="btn-signout" @click="$emit('logout')">
-        <span class="signout-icon">🚪</span> Sign Out
+        <span class="material-symbols-outlined signout-icon">logout</span> Sign Out
       </button>
     </div>
   </header>
@@ -38,12 +37,10 @@
 
 <script setup>
 defineProps({
-  // Hangi nav item'ın aktif göründüğünü belirler: 'catalog' | 'myBooks' | 'profile'
   active: {
     type: String,
     default: 'catalog',
   },
-  // Arama kutusunun görünüp görünmeyeceği (örn. Profile sayfasında gizlenebilir)
   showSearch: {
     type: Boolean,
     default: true,
@@ -62,9 +59,13 @@ defineEmits(['update:searchTerm', 'logout'])
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 24px;
-  margin-bottom: 32px;
+  padding: 16px 32px;
+  width: 100%;
+  background-color: var(--color-surface, #ffffff);
   border-bottom: 1px solid var(--color-outline-variant);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .logo-container {
@@ -75,6 +76,10 @@ defineEmits(['update:searchTerm', 'logout'])
   font-size: 1.4rem;
   font-weight: bold;
   color: var(--color-primary);
+}
+
+.logo-icon {
+  font-size: 28px;
 }
 
 .nav-links {
@@ -91,6 +96,7 @@ defineEmits(['update:searchTerm', 'logout'])
   padding: 8px 0;
   border-bottom: 2px solid transparent;
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 
 .nav-item:disabled {
@@ -124,8 +130,8 @@ defineEmits(['update:searchTerm', 'logout'])
 }
 
 .search-icon {
-  font-size: 14px;
-  opacity: 0.6;
+  font-size: 18px;
+  color: var(--color-text-muted);
 }
 
 .header-search-input {
@@ -145,17 +151,24 @@ defineEmits(['update:searchTerm', 'logout'])
   display: flex;
   align-items: center;
   gap: 6px;
-  background-color: var(--color-outline-variant);
-  color: var(--color-primary);
-  border: none;
+  background-color: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-outline-variant);
   border-radius: 999px;
   padding: 8px 16px;
   font-weight: 600;
   cursor: pointer;
   font-size: 14px;
+  transition: all 0.2s ease;
 }
 
 .btn-signout:hover {
   background-color: rgba(74, 124, 89, 0.1);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.signout-icon {
+  font-size: 18px;
 }
 </style>

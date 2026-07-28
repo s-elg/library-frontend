@@ -5,7 +5,7 @@
       :disabled="currentPage === 1"
       @click="$emit('update:currentPage', currentPage - 1)"
     >
-      ‹
+      <span class="material-symbols-outlined">chevron_left</span>
     </button>
     <button
       v-for="p in totalPages"
@@ -21,7 +21,7 @@
       :disabled="currentPage === totalPages"
       @click="$emit('update:currentPage', currentPage + 1)"
     >
-      ›
+      <span class="material-symbols-outlined">chevron_right</span>
     </button>
   </div>
 </template>
@@ -52,21 +52,29 @@ defineEmits(['update:currentPage'])
 .page-btn {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--color-outline-variant);
-  background-color: var(--color-outline-variant);
+  background-color: var(--color-surface);
   cursor: pointer;
   color: var(--color-text-muted);
   font-size: 14px;
+  font-family: var(--font-body);
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.page-btn:not(.active):not(:disabled):hover {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
 }
 
 .page-btn.active {
   background-color: var(--color-primary);
   color: white;
   border-color: var(--color-primary);
+  font-weight: 700;
 }
 
 .page-btn:disabled {
@@ -74,8 +82,7 @@ defineEmits(['update:currentPage'])
   cursor: not-allowed;
 }
 
-.page-btn.page-arrow {
-  font-size: 1.2rem;
-  color: var(--color-text);
+.page-btn.page-arrow .material-symbols-outlined {
+  font-size: 18px;
 }
 </style>

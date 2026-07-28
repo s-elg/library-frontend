@@ -1,12 +1,18 @@
 <template>
-  <div class="auth-page">
-    <div class="auth-card">
-      <h1>Tekrar Hoş Geldin</h1>
-      <p class="subtitle">Hesabına giriş yap</p>
+  <AuthLayout
+    title="Bilginin Kökleri"
+    subtitle="Geçmişin bilgeliği ile geleceği keşfedin. Hesabına giriş yaparak okuma serüvenine devam et."
+  >
+    <div class="form-header">
+      <h2>Tekrar Hoş Geldin</h2>
+      <p>Hesabına giriş yap</p>
+    </div>
 
-      <form @submit.prevent="handleLogin">
-        <div class="form-group">
-          <label for="email">E-posta</label>
+    <form @submit.prevent="handleLogin">
+      <div class="input-group">
+        <label for="email">E-posta Adresi</label>
+        <div class="input-wrapper">
+          <span class="material-symbols-outlined">mail</span>
           <input
             id="email"
             v-model="email"
@@ -15,9 +21,12 @@
             required
           />
         </div>
+      </div>
 
-        <div class="form-group">
-          <label for="password">Şifre</label>
+      <div class="input-group">
+        <label for="password">Şifre</label>
+        <div class="input-wrapper">
+          <span class="material-symbols-outlined">lock</span>
           <input
             id="password"
             v-model="password"
@@ -26,26 +35,28 @@
             required
           />
         </div>
+      </div>
 
-        <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+      <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
 
-        <button type="submit" class="btn-primary" :disabled="loading">
-          {{ loading ? 'Giriş yapılıyor...' : 'Giriş Yap' }}
-        </button>
-      </form>
+      <button type="submit" class="btn-primary" :disabled="loading">
+        <span v-if="loading" class="material-symbols-outlined spin">progress_activity</span>
+        <span>{{ loading ? 'Giriş yapılıyor...' : 'Giriş Yap' }}</span>
+      </button>
+    </form>
 
-      <p class="switch-link">
-        Hesabın yok mu?
-        <router-link to="/register">Kayıt Ol</router-link>
-      </p>
-    </div>
-  </div>
+    <p class="switch-link">
+      Hesabın yok mu?
+      <router-link to="/register">Kayıt Ol</router-link>
+    </p>
+  </AuthLayout>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
+import AuthLayout from '../../components/layout/AuthLayout.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -74,58 +85,60 @@ async function handleLogin() {
 </script>
 
 <style scoped>
-.auth-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--color-background);
+.form-header {
+  margin-bottom: 28px;
 }
 
-.auth-card {
-  background-color: var(--color-surface);
-  padding: var(--space-card-padding);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-soft);
-  width: 100%;
-  max-width: 400px;
-}
-
-h1 {
-  margin: 0 0 4px;
+.form-header h2 {
   font-size: 1.75rem;
+  margin: 0 0 4px;
 }
 
-.subtitle {
+.form-header p {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
+  margin: 0;
 }
 
-.form-group {
-  margin-bottom: 16px;
+.input-group {
+  margin-bottom: 18px;
 }
 
-label {
+.input-group label {
   display: block;
   margin-bottom: 6px;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
 }
 
-input {
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper .material-symbols-outlined {
+  position: absolute;
+  left: 14px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.input-wrapper input {
   width: 100%;
-  padding: 12px 14px;
-  border-radius: var(--radius-sm);
+  padding: 13px 14px 13px 44px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-outline-variant);
   background-color: var(--color-background);
   font-family: var(--font-body);
   font-size: 1rem;
+  color: var(--color-text);
 }
 
-input:focus {
+.input-wrapper input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.15);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
 .error-text {
@@ -136,13 +149,19 @@ input:focus {
 
 .btn-primary {
   width: 100%;
-  padding: 12px;
+  padding: 14px;
   background-color: var(--color-primary);
   color: white;
   border: none;
   border-radius: var(--radius-md);
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--shadow-soft);
+  transition: background-color 0.2s;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -154,15 +173,26 @@ input:focus {
   cursor: not-allowed;
 }
 
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .switch-link {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 24px;
   font-size: 0.9rem;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-outline-variant);
 }
 
 .switch-link a {
   color: var(--color-primary);
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
 }
 </style>

@@ -3,9 +3,10 @@
     <!-- Kapak görseli yerine kategoriye göre renklenen placeholder -->
     <div class="cover-placeholder" :style="coverStyle">
       <span class="status-badge" :class="isAvailable ? 'status-available' : 'status-loaned'">
-        {{ isAvailable ? '✓ Uygun' : '⏱ Ödünç Alınmış' }}
+        <span class="material-symbols-outlined">{{ isAvailable ? 'check_circle' : 'schedule' }}</span>
+        {{ isAvailable ? 'Uygun' : 'Ödünç Alınmış' }}
       </span>
-      <span class="cover-icon">📖</span>
+      <span class="material-symbols-outlined cover-icon">auto_stories</span>
     </div>
 
     <div class="card-body">
@@ -14,8 +15,13 @@
       <p class="book-author">{{ book.author }}</p>
 
       <div class="card-footer">
-        <span class="copies-info">{{ book.availableCopies }}/{{ book.totalCopies }} kopya</span>
-        <button class="detail-btn" @click.stop="$emit('view-detail', book.id)">→</button>
+        <span class="copies-info">
+          <span class="material-symbols-outlined">menu_book</span>
+          {{ book.availableCopies }}/{{ book.totalCopies }} kopya
+        </span>
+        <button class="detail-btn" @click.stop="$emit('view-detail', book.id)">
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
       </div>
     </div>
   </article>
@@ -58,7 +64,7 @@ const coverStyle = computed(() => {
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: var(--shadow-soft);
-  border: none; /* '1px solid var(--color-outline-variant)' silindi */
+  border: none;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
@@ -67,7 +73,7 @@ const coverStyle = computed(() => {
 
 .book-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(74, 124, 89, 0.1);
+  box-shadow: var(--shadow-hover);
 }
 
 .cover-placeholder {
@@ -87,12 +93,19 @@ const coverStyle = computed(() => {
   position: absolute;
   top: 12px;
   left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 600;
   background-color: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(4px);
+}
+
+.status-badge .material-symbols-outlined {
+  font-size: 14px;
 }
 
 .status-available {
@@ -104,7 +117,7 @@ const coverStyle = computed(() => {
 }
 
 .card-body {
-  padding: var(--space-card-padding); /* '20px' yerine tasarım değişkeni atandı */
+  padding: var(--space-card-padding);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -144,19 +157,32 @@ const coverStyle = computed(() => {
 }
 
 .copies-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 13px;
   color: var(--color-text-muted);
+}
+
+.copies-info .material-symbols-outlined {
+  font-size: 15px;
 }
 
 .detail-btn {
   width: 32px;
   height: 32px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: none;
-  background-color: rgba(74, 124, 89, 0.1);
+  background-color: var(--color-primary-soft);
   color: var(--color-primary);
   cursor: pointer;
-  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-btn .material-symbols-outlined {
+  font-size: 18px;
 }
 
 .detail-btn:hover {

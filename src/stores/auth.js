@@ -36,8 +36,18 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('role', data.role)
     },
     async logout() {
-      await api.post('/auth/logout')
-      this.clearSession()
+      try {
+        // Backend'e çıkış isteği at
+        await api.post('/auth/logout')
+      } catch (error) {
+        // 401 (Unauthorized) gibi bir hata alınırsa buraya düşer.
+        // Hata fırlatmayı engeller ve console'a bilgi veririz.
+        console.warn('Sunucudan çıkış yapılırken hata oluştu, yerel oturum temizleniyor:', error.message)
+      } finally {
+        // İstek başarılı olsa da, 401 hatası verse de burası KESİNLİKLE çalışır
+        // Böylece kullanıcı her durumda sistemden yerel olarak çıkış yapmış olur
+        this.clearSession()
+      }
     },
     clearSession() {
       this.accessToken = null
