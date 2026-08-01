@@ -12,7 +12,7 @@
               <path d="M9 13C9 13 10 15 12 15C14 15 15 13 15 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
             </svg>
           </div>
-          <h1 class="brand-title">Terra Library</h1>
+          <h1 class="brand-title" @click="router.push({ name: 'Catalog' })">Terra Library</h1>
           <p class="brand-tag">Bilgiye kök salan bir topluluk.</p>
 
           <transition name="fade-swap" mode="out-in">
@@ -330,6 +330,13 @@ async function handleRegister() {
   font-size: 2rem;
   font-weight: 700;
   margin: 0 0 8px;
+  cursor: pointer; /* Fare imlecini tıklanabilir (el) işaretine çevirir */
+  transition: opacity 0.2s ease; /* Hover efekti için yumuşak bir geçiş */
+}
+
+/* Üzerine gelindiğinde hafifçe saydamlaşarak tıklanabilir hissi verir */
+.brand-title:hover {
+  opacity: 0.85; 
 }
 
 .brand-tag {
