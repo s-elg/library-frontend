@@ -1,12 +1,12 @@
 <template>
   <header class="top-nav">
-    <div class="logo-container">
+    <router-link :to="{ name: 'Catalog' }" class="logo-container">
       <span class="material-symbols-outlined logo-icon">eco</span>
       <span class="logo-text">Terra Library</span>
-    </div>
+    </router-link>
 
-    <nav class="nav-links">
-      <router-link :to="{ name: 'Home' }" class="nav-item" :class="{ active: active === 'catalog' }">
+    <nav v-if="authStore.isAuthenticated" class="nav-links">
+      <router-link :to="{ name: 'Catalog' }" class="nav-item" :class="{ active: active === 'catalog' }">
         Catalog
       </router-link>
       <button class="nav-item" :class="{ active: active === 'myBooks' }" disabled title="Yakında">
@@ -28,14 +28,20 @@
           @input="$emit('update:searchTerm', $event.target.value)"
         />
       </div>
-      <button class="btn-signout" @click="$emit('logout')">
+
+      <button v-if="authStore.isAuthenticated" class="btn-signout" @click="$emit('logout')">
         <span class="material-symbols-outlined signout-icon">logout</span> Sign Out
       </button>
+      <router-link v-else :to="{ name: 'login' }" class="btn-login">
+        <span class="material-symbols-outlined login-icon">login</span> Giriş Yap
+      </router-link>
     </div>
   </header>
 </template>
 
 <script setup>
+import { useAuthStore } from '../../stores/auth'
+
 defineProps({
   active: {
     type: String,
@@ -52,6 +58,8 @@ defineProps({
 })
 
 defineEmits(['update:searchTerm', 'logout'])
+
+const authStore = useAuthStore()
 </script>
 
 <style scoped>
@@ -76,6 +84,7 @@ defineEmits(['update:searchTerm', 'logout'])
   font-size: 1.4rem;
   font-weight: bold;
   color: var(--color-primary);
+  text-decoration: none;
 }
 
 .logo-icon {
@@ -147,19 +156,24 @@ defineEmits(['update:searchTerm', 'logout'])
   color: var(--color-text-muted);
 }
 
-.btn-signout {
+.btn-signout,
+.btn-login {
   display: flex;
   align-items: center;
   gap: 6px;
-  background-color: transparent;
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-outline-variant);
   border-radius: 999px;
   padding: 8px 16px;
   font-weight: 600;
   cursor: pointer;
   font-size: 14px;
+  text-decoration: none;
   transition: all 0.2s ease;
+}
+
+.btn-signout {
+  background-color: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-outline-variant);
 }
 
 .btn-signout:hover {
@@ -168,7 +182,18 @@ defineEmits(['update:searchTerm', 'logout'])
   border-color: var(--color-primary);
 }
 
-.signout-icon {
+.btn-login {
+  background-color: var(--color-primary);
+  color: white;
+  border: 1px solid var(--color-primary);
+}
+
+.btn-login:hover {
+  opacity: 0.9;
+}
+
+.signout-icon,
+.login-icon {
   font-size: 18px;
 }
 </style>
