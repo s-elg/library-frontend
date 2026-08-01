@@ -231,8 +231,7 @@ async function handleRegister() {
   registerLoading.value = true
   try {
     await authStore.register({
-      firstName: registerForm.firstName,
-      lastName: registerForm.lastName,
+      fullName: `${registerForm.firstName.trim()} ${registerForm.lastName.trim()}`,
       email: registerForm.email,
       password: registerForm.password,
     })
