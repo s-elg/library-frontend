@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AuthView from '../views/AuthView.vue'
-import HomeView from '../views/HomeView.vue'
 import CatalogView from '../views/CatalogView.vue'
+import BookDetailView from '../views/BookDetailView.vue'
 
 const routes = [
   {
@@ -23,10 +23,10 @@ const routes = [
     meta: { initialMode: 'register' },
   },
   {
-    path: '/home',
-    name: 'Home',
-    component: HomeView,
-    meta: { requiresAuth: true },
+    path: '/book/:id',
+    name: 'BookDetail',
+    component: BookDetailView,
+    meta: { requiresAuth: false },
   },
 ]
 
