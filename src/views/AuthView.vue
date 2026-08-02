@@ -31,14 +31,12 @@
           </transition>
         </div>
 
-        <!-- Organik kök deseni (dekoratif, imza öğesi) -->
         <svg class="root-decoration" viewBox="0 0 200 400" preserveAspectRatio="none">
           <path d="M0,0 C40,60 10,120 50,180 C90,240 30,300 60,400 L0,400 Z" fill="rgba(255,255,255,0.06)"/>
           <path d="M0,50 C60,100 20,160 70,220 C110,270 50,340 80,400 L0,400 Z" fill="rgba(255,255,255,0.04)"/>
         </svg>
       </div>
 
-      <!-- Sınırdaki organik kavis (SVG ile "kök ucu" efekti) -->
       <svg class="edge-curve" viewBox="0 0 60 400" preserveAspectRatio="none">
         <path
           class="edge-path"
@@ -88,10 +86,6 @@
                 <a href="#" class="link-muted">Şifremi unuttum</a>
               </div>
 
-              <p v-if="loginErrors.length" class="error-box">
-                <span v-for="(err, i) in loginErrors" :key="i">{{ err }}</span>
-              </p>
-
               <button type="submit" class="primary-btn" :disabled="loginLoading">
                 {{ loginLoading ? 'Giriş yapılıyor...' : 'Giriş Yap' }}
               </button>
@@ -126,30 +120,42 @@
                 />
               </label>
 
-              <label class="field">
+              <!-- ŞİFRE ALANI: input + canlı kural listesi (popover) -->
+              <div class="field password-field">
                 <span class="field-label">Şifre</span>
                 <input
                   v-model="registerForm.password"
                   type="password"
                   autocomplete="new-password"
-                  placeholder="En az 8 karakter"
+                  placeholder="En az 6 karakter"
                   required
+                  @focus="passwordFocused = true"
+                  @blur="passwordFocused = false"
                 />
-              </label>
 
-              <label class="field">
-                <span class="field-label">Şifre Tekrar</span>
-                <input
-                  v-model="registerForm.confirmPassword"
-                  type="password"
-                  autocomplete="new-password"
-                  required
-                />
-              </label>
+                
 
-              <p v-if="registerErrors.length" class="error-box">
-                <span v-for="(err, i) in registerErrors" :key="i">{{ err }}</span>
-              </p>
+                <!-- Popover: input'un altına mutlak konumla oturur, form akışını etkilemez -->
+                <transition name="fade-swap">
+                  <ul v-if="showPasswordRules" class="password-rules">
+                    <li
+                      v-for="(rule, i) in passwordRules"
+                      :key="i"
+                      :class="{ valid: rule.valid }"
+                    >
+                      <span class="rule-icon">
+                        <svg v-if="rule.valid" viewBox="0 0 24 24" fill="none">
+                          <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg v-else viewBox="0 0 24 24" fill="none">
+                          <circle cx="12" cy="12" r="3.5" fill="currentColor"/>
+                        </svg>
+                      </span>
+                      {{ rule.label }}
+                    </li>
+                  </ul>
+                </transition>
+              </div>
 
               <button type="submit" class="primary-btn" :disabled="registerLoading">
                 {{ registerLoading ? 'Kayıt oluşturuluyor...' : 'Kayıt Ol' }}
@@ -161,34 +167,106 @@
       </div>
 
     </div>
+
+    <!-- ===================== TOAST BİLDİRİMİ ===================== -->
+    <Teleport to="body">
+      <transition name="toast-slide">
+        <div v-if="toast.show" class="toast-notification" :class="toast.type">
+          <span class="toast-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M12 8V13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <circle cx="12" cy="16" r="0.9" fill="currentColor"/>
+            </svg>
+          </span>
+          <div class="toast-content">
+            <p v-for="(err, i) in toast.messages" :key="i">{{ err }}</p>
+          </div>
+          <button type="button" class="toast-close" @click="closeToast" aria-label="Kapat">×</button>
+        </div>
+      </transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/auth' // Mevcut Pinia auth store'un
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-// Sayfa /login ile açılırsa 'login', /register ile açılırsa 'register' modunda başlar
 const mode = ref(route.meta?.initialMode === 'register' ? 'register' : 'login')
 
 function switchMode(target) {
   mode.value = target
-  // URL'i de senkron tutmak istersen (opsiyonel):
   router.replace({ path: target === 'login' ? '/login' : '/register' })
+}
+
+// ---------- TOAST BİLDİRİM SİSTEMİ ----------
+const toast = reactive({ show: false, messages: [], type: 'error' })
+let toastTimer = null
+
+function showToast(messages, type = 'error') {
+  toast.messages = messages
+  toast.type = type
+  toast.show = true
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => {
+    toast.show = false
+  }, 5000)
+}
+
+function closeToast() {
+  toast.show = false
+  clearTimeout(toastTimer)
+}
+
+// C# / ASP.NET Core'dan gelen çeşitli hata formatlarını çözümleyen yardımcı fonksiyon
+function extractApiErrors(err) {
+  // 1. Sunucuya hiç ulaşılamadıysa (Network Error)
+  if (!err.response) return ['Sunucuya ulaşılamıyor, bağlantınızı kontrol edin.'];
+
+  const data = err.response.data;
+
+  // 2. .NET Core Varsayılan (ProblemDetails) formatı: { "errors": { "Email": ["Hata 1", "Hata 2"] } }
+  if (data && data.errors) {
+    if (typeof data.errors === 'object' && !Array.isArray(data.errors)) {
+      // İç içe dizileri düzleştirir
+      return Object.values(data.errors).flat();
+    }
+    // Dizi olarak geliyorsa (bazı custom filter'lar)
+    if (Array.isArray(data.errors)) {
+      // Eğer [{ propertyName: "Email", errorMessage: "Hata" }] şeklindeyse
+      if (typeof data.errors[0] === 'object' && data.errors[0].errorMessage) {
+        return data.errors.map(e => e.errorMessage);
+      }
+      return data.errors; // Zaten düz string dizisiyse
+    }
+  }
+
+  // 3. Büyük harfle "Errors" gelme ihtimali
+  if (data && data.Errors) {
+    if (typeof data.Errors === 'object') {
+      return Object.values(data.Errors).flat();
+    }
+  }
+
+  // 4. Validasyon hatası değil de genel bir kural hatasıysa (Örn: "Bu email zaten kayıtlı")
+  if (data && data.message) return [data.message];
+  if (data && data.Message) return [data.Message];
+
+  // 5. Hiçbirine uymuyorsa varsayılan mesaj
+  return ['İşlem sırasında bir hata oluştu. Lütfen bilgilerinizi kontrol edin.'];
 }
 
 // ---------- LOGIN ----------
 const loginForm = reactive({ email: '', password: '', rememberMe: false })
-const loginErrors = ref([])
 const loginLoading = ref(false)
 
 async function handleLogin() {
-  loginErrors.value = []
   loginLoading.value = true
   try {
     await authStore.login({
@@ -197,13 +275,9 @@ async function handleLogin() {
     })
     router.push('/')
   } catch (err) {
-    // FluentValidation hataları genelde err.response.data.errors { Field: [msg,...] } şeklinde gelir
-    const apiErrors = err?.response?.data?.errors
-    if (apiErrors) {
-      loginErrors.value = Object.values(apiErrors).flat()
-    } else {
-      loginErrors.value = [err?.response?.data?.message || 'Giriş başarısız. Bilgilerini kontrol et.']
-    }
+    // SADECE BURASI DEĞİŞTİ
+    const errorMessages = extractApiErrors(err)
+    showToast(errorMessages)
   } finally {
     loginLoading.value = false
   }
@@ -217,14 +291,36 @@ const registerForm = reactive({
   password: '',
   confirmPassword: '',
 })
-const registerErrors = ref([])
 const registerLoading = ref(false)
 
-async function handleRegister() {
-  registerErrors.value = []
+// Şifre inputuna odaklanıldığında true olur, boşken ve focus kaybolunca listeyi gizler
+const passwordFocused = ref(false)
 
-  if (registerForm.password !== registerForm.confirmPassword) {
-    registerErrors.value = ['Şifreler eşleşmiyor.']
+// Backend'deki FluentValidation kurallarının birebir frontend karşılığı:
+// NotEmpty + MinimumLength(6) + Matches("[A-Z]") + Matches("[0-9]")
+const passwordRules = computed(() => {
+  const pwd = registerForm.password
+  return [
+    { label: 'En az 6 karakter', valid: pwd.length >= 6 },
+    { label: 'En az bir büyük harf (A-Z)', valid: /[A-Z]/.test(pwd) },
+    { label: 'En az bir rakam (0-9)', valid: /[0-9]/.test(pwd) },
+  ]
+})
+
+// Tüm kurallar sağlandı mı — submit öncesi kontrol için
+const isPasswordValid = computed(() => passwordRules.value.every((r) => r.valid))
+
+// Liste ne zaman görünsün: 
+// Input focus'tayken VEYA (içinde yazı varsa VE kuralların hepsi henüz sağlanmadıysa)
+const showPasswordRules = computed(
+  () => (passwordFocused.value || registerForm.password.length > 0) && !isPasswordValid.value
+)
+
+async function handleRegister() {
+  // Şifre kuralları sağlanmadan backend'e istek atmayalım
+  if (!isPasswordValid.value) {
+    showToast(['Lütfen şifre kurallarının tamamını sağlayın.'])
+    passwordFocused.value = true
     return
   }
 
@@ -235,16 +331,12 @@ async function handleRegister() {
       email: registerForm.email,
       password: registerForm.password,
     })
-    // Kayıt sonrası otomatik login moduna geç
+    showToast(['Kayıt başarılı! Şimdi giriş yapabilirsin.'], 'success')
     switchMode('login')
   } catch (err) {
-    const apiErrors = err?.response?.data?.errors
-    if (apiErrors) {
-      registerErrors.value = Object.values(apiErrors).flat()
-    } else {
-      registerErrors.value = [err?.response?.data?.message || 'Kayıt başarısız oldu.']
-    }
-  } finally {
+    const errorMessages = extractApiErrors(err)
+    showToast(errorMessages)
+    } finally {
     registerLoading.value = false
   }
 }
@@ -261,6 +353,7 @@ async function handleRegister() {
   --color-on-surface-variant: #4a4e4a;
   --color-outline-variant: #c4c8bc;
   --color-surface: #ffffff;
+  --color-error: #b83230;
   --font-headline: 'Literata', serif;
   --font-body: 'Nunito Sans', sans-serif;
 
@@ -279,14 +372,14 @@ async function handleRegister() {
   display: flex;
   width: 100%;
   max-width: 960px;
-  height: 600px;
+  min-height: 600px; /* SABİT YÜKSEKLİĞİ KALDIRIP MİNİMUM YÜKSEKLİK YAPTIK */
+  height: auto;      /* İÇERİK UZADIKÇA KUTUNUN ESNEMESİNE İZİN VERDİK */
   border-radius: 28px;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(46, 50, 48, 0.12);
   background: var(--color-surface);
 }
 
-/* ===================== SABİT MARKA PANELİ ===================== */
 .brand-panel {
   position: relative;
   width: 38%;
@@ -307,10 +400,7 @@ async function handleRegister() {
   pointer-events: none;
 }
 
-.brand-content {
-  position: relative;
-  z-index: 2;
-}
+.brand-content { position: relative; z-index: 2; }
 
 .brand-badge {
   width: 56px;
@@ -329,14 +419,10 @@ async function handleRegister() {
   font-size: 2rem;
   font-weight: 700;
   margin: 0 0 8px;
-  cursor: pointer; /* Fare imlecini tıklanabilir (el) işaretine çevirir */
-  transition: opacity 0.2s ease; /* Hover efekti için yumuşak bir geçiş */
+  cursor: pointer;
+  transition: opacity 0.2s ease;
 }
-
-/* Üzerine gelindiğinde hafifçe saydamlaşarak tıklanabilir hissi verir */
-.brand-title:hover {
-  opacity: 0.85; 
-}
+.brand-title:hover { opacity: 0.85; }
 
 .brand-tag {
   font-size: 0.95rem;
@@ -368,16 +454,9 @@ async function handleRegister() {
   border-color: #fff;
 }
 
-.fade-swap-enter-active,
-.fade-swap-leave-active {
-  transition: opacity 0.2s ease;
-}
-.fade-swap-enter-from,
-.fade-swap-leave-to {
-  opacity: 0;
-}
+.fade-swap-enter-active, .fade-swap-leave-active { transition: opacity 0.2s ease; }
+.fade-swap-enter-from, .fade-swap-leave-to { opacity: 0; }
 
-/* ===================== SINIRDAKİ ORGANİK KAVİS (imza öğesi) ===================== */
 .edge-curve {
   position: absolute;
   left: calc(38% - 30px);
@@ -392,12 +471,7 @@ async function handleRegister() {
   transition: d 0.6s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-/* ===================== KAYAN FORM VİTRİNİ ===================== */
-.form-viewport {
-  position: relative;
-  flex: 1;
-  overflow: hidden;
-}
+.form-viewport { position: relative; flex: 1; overflow: hidden; }
 
 .form-track {
   display: flex;
@@ -406,9 +480,7 @@ async function handleRegister() {
   transform: translateX(0%);
   transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
 }
-.form-track.is-register {
-  transform: translateX(-50%);
-}
+.form-track.is-register { transform: translateX(-50%); }
 
 .form-panel {
   width: 50%;
@@ -433,23 +505,9 @@ async function handleRegister() {
   font-size: 0.95rem;
 }
 
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.field-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
+.auth-form { display: flex; flex-direction: column; gap: 18px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 
 .field-label {
   font-size: 0.82rem;
@@ -488,25 +546,61 @@ async function handleRegister() {
   cursor: pointer;
 }
 
-.link-muted {
-  color: var(--color-tertiary);
-  text-decoration: none;
-  font-weight: 600;
-}
+.link-muted { color: var(--color-tertiary); text-decoration: none; font-weight: 600; }
 .link-muted:hover { text-decoration: underline; }
 
-.error-box {
-  background: #ffdad8;
-  color: #690005;
-  border-radius: 10px;
-  padding: 12px 16px;
-  font-size: 0.85rem;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 0;
+/* Şifre inputunu saran wrapper — popover'ın referans noktası */
+.password-field {
+  position: relative;
 }
 
+/* ===================== ŞİFRE KURAL LİSTESİ (POPOVER) ===================== */
+/* Artık document flow'da değil -> form yüksekliğini etkilemiyor,
+   input'un hemen altına mutlak konumla "asılıyor" */
+.password-rules {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+
+  list-style: none;
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(46, 50, 48, 0.12);
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.password-rules li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--color-error);
+  transition: color 0.25s ease;
+}
+
+.password-rules li.valid {
+  color: var(--color-primary);
+}
+
+.rule-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.rule-icon svg { width: 100%; height: 100%; }
+
+/* ===================== SUBMIT BUTONU ===================== */
 .primary-btn {
   margin-top: 8px;
   padding: 14px;
@@ -524,17 +618,56 @@ async function handleRegister() {
 .primary-btn:active:not(:disabled) { transform: scale(0.98); }
 .primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
+/* ===================== TOAST BİLDİRİMİ ===================== */
+.toast-notification {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 360px;
+  background: #ffffff;
+  border-left: 4px solid #b83230;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 8px 30px rgba(46, 50, 48, 0.15);
+  font-family: 'Nunito Sans', sans-serif;
+}
+.toast-notification.success { border-left-color: #4a7c59; }
+
+.toast-icon { flex-shrink: 0; margin-top: 2px; color: #b83230; }
+.toast-notification.success .toast-icon { color: #4a7c59; }
+.toast-icon svg { width: 20px; height: 20px; }
+
+.toast-content { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.toast-content p { margin: 0; font-size: 0.85rem; line-height: 1.4; color: #2e3230; }
+
+.toast-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: #4a4e4a;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+.toast-close:hover { color: #2e3230; }
+
+.toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.3s ease; }
+.toast-slide-enter-from, .toast-slide-leave-to { opacity: 0; transform: translateX(30px); }
+
 /* ===================== MOBİL ===================== */
 @media (max-width: 720px) {
-  .auth-shell {
-    flex-direction: column;
-    height: auto;
-    max-width: 420px;
-  }
+  .auth-shell { flex-direction: column; height: auto; max-width: 420px; }
   .brand-panel { width: 100%; padding: 32px; }
   .edge-curve { display: none; }
   .form-track { width: 200%; }
   .form-panel { padding: 32px; }
   .field-grid { grid-template-columns: 1fr; }
+
+  .toast-notification { left: 16px; right: 16px; top: 16px; max-width: none; }
 }
 </style>
