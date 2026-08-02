@@ -32,6 +32,13 @@ async function goBack() {
   }
 }
 
+// Görsel yüklenirken hata oluşursa, görseli iptal edip estetik placeholder'a düşürür
+function handleImageError() {
+  if (book.value) {
+    book.value.coverImageUrl = null
+  }
+}
+
 // Kitabı, yorumları ve ortalama puanı paralel çekiyoruz.
 // Servisler artık response.data'yı zaten döndürdüğü için ".data" tekrar okumuyoruz.
 async function fetchBookData() {
@@ -121,11 +128,21 @@ onMounted(fetchBookData)
     <div v-else-if="book" class="detail-grid">
       <!-- Sol: Kapak görseli -->
       <div class="cover-panel">
+        <!-- Görsel varsa ve hata vermediyse göster -->
         <img
-          :src="book.coverImageUrl || '/placeholder-book.png'"
+          v-if="book.coverImageUrl"
+          :src="book.coverImageUrl"
           :alt="book.title"
           class="cover-image"
+          @error="handleImageError"
         />
+        
+        <!-- Görsel yoksa veya yüklenemediyse estetik placeholder göster -->
+        <div v-else class="cover-placeholder">
+          <span class="material-symbols-outlined placeholder-icon">menu_book</span>
+          <h3 class="placeholder-title">{{ book.title }}</h3>
+          <span class="placeholder-author">{{ book.author }}</span>
+        </div>
       </div>
 
       <!-- Sağ: Kitap bilgileri -->
@@ -266,6 +283,7 @@ onMounted(fetchBookData)
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-soft);
+  align-self: flex-start; /* İçerik kadar yer kaplamasını sağlar */
 }
 .cover-image {
   width: 100%;
@@ -273,6 +291,48 @@ onMounted(fetchBookData)
   object-fit: cover;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-hover);
+}
+
+/* Estetik Placeholder Stilleri */
+.cover-placeholder {
+  width: 100%;
+  aspect-ratio: 3 / 4; /* YENİ: Sabit yükseklik yerine orantı kullanıyoruz */
+  background: linear-gradient(135deg, var(--color-primary-soft) 0%, var(--color-surface) 100%);
+  border: 2px dashed var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.5rem; /* Dar alanlar için padding'i biraz küçülttük */
+  box-shadow: var(--shadow-hover);
+  transition: all 0.3s ease;
+}
+
+.placeholder-icon {
+  font-size: 3.5rem;
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+  opacity: 0.8;
+}
+
+.placeholder-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  color: var(--color-text);
+  margin: 0 0 0.5rem 0;
+  /* Çok uzun kitap isimlerini 3 satırda kesmek için */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.placeholder-author {
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--color-text-muted);
 }
 
 .info-panel {
