@@ -40,7 +40,6 @@ function handleImageError() {
 }
 
 // Kitabı, yorumları ve ortalama puanı paralel çekiyoruz.
-// Servisler artık response.data'yı zaten döndürdüğü için ".data" tekrar okumuyoruz.
 async function fetchBookData() {
   isLoading.value = true
   errorMessage.value = ''
@@ -248,7 +247,8 @@ onMounted(fetchBookData)
   </div>
 </template>
 
-<<style scoped>
+<style scoped>
+/* ===================== MASAÜSTÜ (WEB) GÖRÜNÜMÜ ===================== */
 .book-detail-page {
   max-width: 1120px;
   margin: 0 auto;
@@ -283,7 +283,7 @@ onMounted(fetchBookData)
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-soft);
-  align-self: flex-start; /* İçerik kadar yer kaplamasını sağlar */
+  align-self: flex-start;
 }
 .cover-image {
   width: 100%;
@@ -293,10 +293,9 @@ onMounted(fetchBookData)
   box-shadow: var(--shadow-hover);
 }
 
-/* Estetik Placeholder Stilleri */
 .cover-placeholder {
   width: 100%;
-  aspect-ratio: 3 / 4; /* YENİ: Sabit yükseklik yerine orantı kullanıyoruz */
+  aspect-ratio: 3 / 4;
   background: linear-gradient(135deg, var(--color-primary-soft) 0%, var(--color-surface) 100%);
   border: 2px dashed var(--color-outline-variant);
   border-radius: var(--radius-md);
@@ -305,7 +304,7 @@ onMounted(fetchBookData)
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 1.5rem; /* Dar alanlar için padding'i biraz küçülttük */
+  padding: 1.5rem;
   box-shadow: var(--shadow-hover);
   transition: all 0.3s ease;
 }
@@ -322,7 +321,6 @@ onMounted(fetchBookData)
   font-size: 1.5rem;
   color: var(--color-text);
   margin: 0 0 0.5rem 0;
-  /* Çok uzun kitap isimlerini 3 satırda kesmek için */
   display: -webkit-box;
   -webkit-line-clamp: 3;
   line-clamp: 3;
@@ -507,6 +505,7 @@ onMounted(fetchBookData)
 }
 .comment-input {
   width: 100%;
+  box-sizing: border-box; /* Taşmayı engellemek için eklendi */
   border: none;
   border-radius: var(--radius-md);
   background-color: var(--color-primary-soft);
@@ -584,5 +583,40 @@ onMounted(fetchBookData)
 }
 .back-button .material-symbols-outlined {
   font-size: 20px;
+}
+
+/* ===================== MOBİL (RESPONSIVE) TASARIM ===================== */
+@media (max-width: 768px) {
+  .book-detail-page {
+    padding: 1rem;
+  }
+  
+  .title {
+    font-size: 1.75rem; /* Mobilde başlık biraz küçültüldü */
+  }
+  
+  .meta-grid {
+    /* Dar ekranda 3 sütun metinleri ezeceği için alt alta esnek yapıya geçirildi */
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+  }
+  
+  .reviews-summary {
+    flex-direction: column; /* Puanlama kutusu ile yorum formunu alt alta dizer */
+    gap: 1.5rem;
+  }
+  
+  .rating-box {
+    min-width: 100%; /* Puan kutusunu tam genişlik yapar */
+  }
+  
+  .review-form {
+    min-width: 100%;
+  }
+
+  .btn-primary {
+    width: 100%; /* Tıklama kolaylığı için butonu tam genişliğe yaydık */
+    text-align: center;
+  }
 }
 </style>

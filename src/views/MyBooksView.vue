@@ -301,6 +301,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* --- MASAÜSTÜ (WEB) GÖRÜNÜMÜ - DEĞİŞTİRİLMEDİ --- */
 .mybooks-layout {
   display: flex;
   flex-direction: column;
@@ -501,6 +502,7 @@ onMounted(() => {
 .btn-review {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   background-color: var(--color-primary);
   color: white;
@@ -660,5 +662,64 @@ onMounted(() => {
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* --- MOBİL (RESPONSIVE) TASARIM --- */
+@media (max-width: 900px) {
+  .mybooks-layout {
+    gap: 24px; /* Mobilde bloklar arası boşluk azaltıldı */
+  }
+
+  .page-title {
+    font-size: 28px; /* Mobilde başlık biraz küçültüldü */
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  /* Aktif Okumalar - Grid'i tek sütuna indir */
+  .active-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Kartın içindeki uzun başlık/rozet kısmının alt alta geçmesini sağla */
+  .active-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  /* Okuma Geçmişi Listesi - Butonu alta at */
+  .history-item {
+    display: grid;
+    grid-template-columns: auto 1fr; /* İkon ve bilgi yan yana */
+    grid-template-areas:
+      "icon info"
+      "btn btn"; /* Buton tam genişlikte alt satırda */
+    gap: 12px;
+    align-items: center;
+  }
+
+  .history-icon {
+    grid-area: icon;
+  }
+
+  .history-info {
+    grid-area: info;
+  }
+
+  .btn-review {
+    grid-area: btn;
+    width: 100%; /* Mobilde tıklaması kolay, tam genişlik buton */
+    padding: 10px;
+  }
+
+  /* Modal İçerik Boşlukları (Mobilde daraltıldı) */
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 16px;
+  }
 }
 </style>

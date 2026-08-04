@@ -7,8 +7,24 @@
     @logout="handleLogout"
   >
     <div class="catalog-layout">
-      <!-- Sol filtre paneli -->
-      <aside class="filters-panel">
+      <!-- Arka Plan Karartması (Mobilde sidebar açıkken) -->
+      <div 
+        class="sidebar-overlay" 
+        v-if="isSidebarOpen" 
+        @click="closeSidebar"
+      ></div>
+
+      <!-- Sol filtre paneli (Mobilde Sidebar) -->
+      <aside class="filters-panel" :class="{ 'is-open': isSidebarOpen }">
+        
+        <!-- Sadece mobilde görünen sidebar başlığı ve kapatma butonu -->
+        <div class="sidebar-header">
+          <h3>Filtreler</h3>
+          <button class="close-btn" @click="closeSidebar" aria-label="Kapat">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
         <div class="filter-card">
           <h2 class="filter-title">
             <span class="material-symbols-outlined">category</span>
@@ -57,6 +73,12 @@
               {{ totalCount }} kitap arasında keşfe çıkın.
             </p>
           </div>
+          
+          <!-- Sadece mobilde görünen filtre açma butonu -->
+          <button class="filter-toggle-btn" @click="toggleSidebar">
+            <span class="material-symbols-outlined">filter_list</span>
+            Filtrele
+          </button>
         </header>
 
         <!-- Yükleniyor durumu -->
@@ -112,7 +134,7 @@ const loading = ref(false)
 const error = ref(false)
 
 const searchTerm = ref('')
-const selectedCategoryId = ref(null) // null = "Tümü"
+const selectedCategoryId = ref(null)
 const availableOnly = ref(false)
 
 const currentPage = ref(1)
@@ -120,13 +142,24 @@ const pageSize = 9
 const totalPages = ref(1)
 const totalCount = ref(0)
 
+// --- Mobil Sidebar State ---
+const isSidebarOpen = ref(false)
+
+function toggleSidebar() {
+  isSidebarOpen.value = !isSidebarOpen.value
+}
+
+function closeSidebar() {
+  isSidebarOpen.value = false
+}
+
 // Arama input'unda her tuşta backend'e istek atmamak için debounce
 let searchDebounceTimer = null
 function onSearchTermChange(value) {
   searchTerm.value = value
   clearTimeout(searchDebounceTimer)
   searchDebounceTimer = setTimeout(() => {
-    currentPage.value = 1 // yeni arama başlayınca ilk sayfaya dön
+    currentPage.value = 1 
     fetchBooks()
   }, 400)
 }
@@ -135,10 +168,9 @@ function selectCategory(categoryId) {
   selectedCategoryId.value = categoryId
   currentPage.value = 1
   fetchBooks()
+  closeSidebar()
 }
 
-// "Sadece uygun olanlar" backend'e gitmiyor; mevcut sayfadaki
-// sonuçlar üzerinde client-side filtre olarak uygulanıyor.
 const filteredBooks = computed(() => {
   if (!availableOnly.value) return books.value
   return books.value.filter((b) => b.availableCopies > 0)
@@ -176,9 +208,9 @@ async function fetchCategories() {
   }
 }
 
-// Sayfa değişince yeniden veri çek
 watch(currentPage, () => {
   fetchBooks()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 
 function goToDetail(bookId) {
@@ -202,15 +234,18 @@ onMounted(() => {
   grid-template-columns: 260px 1fr;
   gap: 32px;
   align-items: start;
+  position: relative;
 }
 
-@media (max-width: 900px) {
-  .catalog-layout {
-    grid-template-columns: 1fr;
-  }
+/* --- Masaüstünde Gizli Kalması Gereken Mobil Elemanlar --- */
+.sidebar-header {
+  display: none;
+}
+.filter-toggle-btn {
+  display: none;
 }
 
-/* Filtre paneli */
+/* Filtre paneli (Masaüstü) */
 .filters-panel {
   display: flex;
   flex-direction: column;
@@ -282,6 +317,9 @@ onMounted(() => {
 /* İçerik alanı */
 .content-header {
   margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
 }
 
 .content-title {
@@ -313,5 +351,95 @@ onMounted(() => {
 
 .state-message.error {
   color: var(--color-error, #b83230);
+}
+
+/* --- Responsive Kurallar --- */
+@media (max-width: 900px) {
+  .catalog-layout {
+    grid-template-columns: 1fr;
+  }
+
+  /* Overlay (Arka plan karartması) */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+  }
+
+  /* Mobilde Filtre Paneli (Sidebar) */
+  .filters-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    background-color: var(--color-surface, #ffffff);
+    z-index: 50;
+    padding: 24px;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    overflow-y: auto;
+  }
+
+  .filters-panel.is-open {
+    transform: translateX(0);
+  }
+
+  /* Sadece mobilde görünen elemanlara flex veriyoruz */
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .sidebar-header h3 {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 20px;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+  }
+
+  .filter-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* Mobilde kart görünümlerini sıfırla, düz liste gibi görünsün */
+  .filter-card {
+    box-shadow: none;
+    padding: 0 0 24px 0;
+    border-radius: 0;
+  }
+
+  .content-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
 }
 </style>

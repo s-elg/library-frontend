@@ -2,7 +2,7 @@
   <div class="auth-page">
     <div class="auth-shell">
 
-      <!-- ===================== SABİT MARKA PANELİ (kaymaz) ===================== -->
+      <!-- ===================== SABİT MARKA PANELİ ===================== -->
       <div class="brand-panel">
         <div class="brand-content">
           <div class="brand-badge">
@@ -120,7 +120,7 @@
                 />
               </label>
 
-              <!-- ŞİFRE ALANI: input + canlı kural listesi (popover) -->
+              <!-- ŞİFRE ALANI -->
               <div class="field password-field">
                 <span class="field-label">Şifre</span>
                 <input
@@ -133,9 +133,6 @@
                   @blur="passwordFocused = false"
                 />
 
-                
-
-                <!-- Popover: input'un altına mutlak konumla oturur, form akışını etkilemez -->
                 <transition name="fade-swap">
                   <ul v-if="showPasswordRules" class="password-rules">
                     <li
@@ -224,41 +221,31 @@ function closeToast() {
   clearTimeout(toastTimer)
 }
 
-// C# / ASP.NET Core'dan gelen çeşitli hata formatlarını çözümleyen yardımcı fonksiyon
 function extractApiErrors(err) {
-  // 1. Sunucuya hiç ulaşılamadıysa (Network Error)
   if (!err.response) return ['Sunucuya ulaşılamıyor, bağlantınızı kontrol edin.'];
 
   const data = err.response.data;
-
-  // 2. .NET Core Varsayılan (ProblemDetails) formatı: { "errors": { "Email": ["Hata 1", "Hata 2"] } }
   if (data && data.errors) {
     if (typeof data.errors === 'object' && !Array.isArray(data.errors)) {
-      // İç içe dizileri düzleştirir
       return Object.values(data.errors).flat();
     }
-    // Dizi olarak geliyorsa (bazı custom filter'lar)
     if (Array.isArray(data.errors)) {
-      // Eğer [{ propertyName: "Email", errorMessage: "Hata" }] şeklindeyse
       if (typeof data.errors[0] === 'object' && data.errors[0].errorMessage) {
         return data.errors.map(e => e.errorMessage);
       }
-      return data.errors; // Zaten düz string dizisiyse
+      return data.errors; 
     }
   }
 
-  // 3. Büyük harfle "Errors" gelme ihtimali
   if (data && data.Errors) {
     if (typeof data.Errors === 'object') {
       return Object.values(data.Errors).flat();
     }
   }
 
-  // 4. Validasyon hatası değil de genel bir kural hatasıysa (Örn: "Bu email zaten kayıtlı")
   if (data && data.message) return [data.message];
   if (data && data.Message) return [data.Message];
 
-  // 5. Hiçbirine uymuyorsa varsayılan mesaj
   return ['İşlem sırasında bir hata oluştu. Lütfen bilgilerinizi kontrol edin.'];
 }
 
@@ -275,7 +262,6 @@ async function handleLogin() {
     })
     router.push('/')
   } catch (err) {
-    // SADECE BURASI DEĞİŞTİ
     const errorMessages = extractApiErrors(err)
     showToast(errorMessages)
   } finally {
@@ -293,11 +279,8 @@ const registerForm = reactive({
 })
 const registerLoading = ref(false)
 
-// Şifre inputuna odaklanıldığında true olur, boşken ve focus kaybolunca listeyi gizler
 const passwordFocused = ref(false)
 
-// Backend'deki FluentValidation kurallarının birebir frontend karşılığı:
-// NotEmpty + MinimumLength(6) + Matches("[A-Z]") + Matches("[0-9]")
 const passwordRules = computed(() => {
   const pwd = registerForm.password
   return [
@@ -307,17 +290,13 @@ const passwordRules = computed(() => {
   ]
 })
 
-// Tüm kurallar sağlandı mı — submit öncesi kontrol için
 const isPasswordValid = computed(() => passwordRules.value.every((r) => r.valid))
 
-// Liste ne zaman görünsün: 
-// Input focus'tayken VEYA (içinde yazı varsa VE kuralların hepsi henüz sağlanmadıysa)
 const showPasswordRules = computed(
   () => (passwordFocused.value || registerForm.password.length > 0) && !isPasswordValid.value
 )
 
 async function handleRegister() {
-  // Şifre kuralları sağlanmadan backend'e istek atmayalım
   if (!isPasswordValid.value) {
     showToast(['Lütfen şifre kurallarının tamamını sağlayın.'])
     passwordFocused.value = true
@@ -372,8 +351,8 @@ async function handleRegister() {
   display: flex;
   width: 100%;
   max-width: 960px;
-  min-height: 600px; /* SABİT YÜKSEKLİĞİ KALDIRIP MİNİMUM YÜKSEKLİK YAPTIK */
-  height: auto;      /* İÇERİK UZADIKÇA KUTUNUN ESNEMESİNE İZİN VERDİK */
+  min-height: 600px;
+  height: auto;      
   border-radius: 28px;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(46, 50, 48, 0.12);
@@ -516,6 +495,8 @@ async function handleRegister() {
 }
 
 .field input {
+  width: 100%;
+  box-sizing: border-box;
   padding: 12px 16px;
   border-radius: 12px;
   border: 1px solid var(--color-outline-variant);
@@ -549,14 +530,11 @@ async function handleRegister() {
 .link-muted { color: var(--color-tertiary); text-decoration: none; font-weight: 600; }
 .link-muted:hover { text-decoration: underline; }
 
-/* Şifre inputunu saran wrapper — popover'ın referans noktası */
 .password-field {
   position: relative;
 }
 
 /* ===================== ŞİFRE KURAL LİSTESİ (POPOVER) ===================== */
-/* Artık document flow'da değil -> form yüksekliğini etkilemiyor,
-   input'un hemen altına mutlak konumla "asılıyor" */
 .password-rules {
   position: absolute;
   top: calc(100% + 6px);
@@ -661,13 +639,25 @@ async function handleRegister() {
 
 /* ===================== MOBİL ===================== */
 @media (max-width: 720px) {
-  .auth-shell { flex-direction: column; height: auto; max-width: 420px; }
+  .auth-page {
+    align-items: flex-start;
+    padding: 16px;
+  }
+  .auth-shell { 
+    flex-direction: column; 
+    height: auto; 
+    max-width: 420px;
+    margin: 0 auto; 
+    width: 100%;
+  }
   .brand-panel { width: 100%; padding: 32px; }
   .edge-curve { display: none; }
   .form-track { width: 200%; }
-  .form-panel { padding: 32px; }
+  .form-panel { 
+    padding: 32px 32px 100px 32px; 
+  }
   .field-grid { grid-template-columns: 1fr; }
 
-  .toast-notification { left: 16px; right: 16px; top: 16px; max-width: none; }
+  .toast-notification { left: 16px; right: 16px; top: 16px; max-width: none; width: auto; }
 }
 </style>
