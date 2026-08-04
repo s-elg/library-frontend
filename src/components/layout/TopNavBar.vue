@@ -9,9 +9,9 @@
       <router-link :to="{ name: 'Catalog' }" class="nav-item" :class="{ active: active === 'catalog' }">
         Catalog
       </router-link>
-      <button class="nav-item" :class="{ active: active === 'myBooks' }" disabled title="Yakında">
+      <router-link :to="{ name: 'MyBooks' }" class="nav-item" :class="{ active: active === 'myBooks' }">
         My Books
-      </button>
+      </router-link>
       <button class="nav-item" :class="{ active: active === 'profile' }" disabled title="Yakında">
         Profile
       </button>

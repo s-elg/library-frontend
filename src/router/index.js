@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AuthView from '../views/AuthView.vue'
 import CatalogView from '../views/CatalogView.vue'
 import BookDetailView from '../views/BookDetailView.vue'
+import MyBooksView from '../views/MyBooksView.vue'
 
 const routes = [
   {
@@ -27,6 +28,12 @@ const routes = [
     name: 'BookDetail',
     component: BookDetailView,
     meta: { requiresAuth: false },
+  },
+  {
+    path: '/my-books',
+    name: 'MyBooks',
+    component: MyBooksView,
+    meta: { requiresAuth: true },
   },
 ]
 

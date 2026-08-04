@@ -325,6 +325,7 @@ onMounted(fetchBookData)
   /* Çok uzun kitap isimlerini 3 satırda kesmek için */
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
