@@ -107,7 +107,6 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { getMyPenalties } from '../services/penaltyService'
 import MainLayout from '../components/layout/MainLayout.vue'
-import TopNavBar from '../components/layout/TopNavBar.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -162,7 +161,6 @@ async function handlePasswordSubmit() {
       currentPassword: passwordForm.currentPassword,
       newPassword: passwordForm.newPassword,
     })
-    // changePassword başarılı olunca store zaten oturumu kapattı, login'e yönlendir
     router.push({ name: 'login' })
   } catch (error) {
     passwordError.value = error.response?.data?.message || 'Şifre güncellenemedi.'
@@ -270,6 +268,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
 }
 
 .field label {
@@ -279,6 +278,8 @@ onMounted(() => {
 }
 
 .field input {
+  width: 100%;
+  box-sizing: border-box; /* Taşmayı engeller */
   padding: 12px 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-outline-variant);
@@ -418,7 +419,20 @@ onMounted(() => {
   color: var(--color-text-muted);
 }
 
-/* --- Responsive: tablet ve üstü --- */
+/* --- Responsive (Mobil) --- */
+@media (max-width: 900px) {
+  .profile-page {
+    padding: 16px 12px 64px; /* Mobilde kenar boşluklarını daralttık */
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%; /* Mobilde tıklama kolaylığı için tam genişlik */
+    text-align: center;
+  }
+}
+
+/* --- Responsive (Tablet ve üstü) --- */
 @media (min-width: 900px) {
   .profile-grid {
     flex-direction: row;
