@@ -29,9 +29,14 @@
         >
           My Books
         </router-link>
-        <button class="nav-item" :class="{ active: active === 'profile' }" disabled title="Yakında">
+        <router-link
+          :to="{ name: 'Profile' }"
+          class="nav-item"
+          :class="{ active: active === 'profile' }"
+          @click="closeMenu"
+        >
           Profile
-        </button>
+        </router-link>
       </nav>
 
       <div class="header-actions">

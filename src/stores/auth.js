@@ -1,3 +1,4 @@
+// src/stores/auth.js
 import { defineStore } from 'pinia'
 import api from '../services/api'
 
@@ -35,17 +36,29 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('fullName', data.fullName)
       localStorage.setItem('role', data.role)
     },
+    // Profil bilgilerini (ad soyad + email) günceller
+    async updateProfile(payload) {
+      // payload: { fullName, email }
+      const response = await api.put('/auth/profile', payload)
+      // Backend UserProfileDto döner: { fullName, email, role }
+      this.fullName = response.data.fullName
+      this.email = response.data.email
+      localStorage.setItem('fullName', response.data.fullName)
+      localStorage.setItem('email', response.data.email)
+    },
+    // Şifre değiştirir. Backend başarılı olursa tüm refresh token'ları
+    // iptal ediyor, bu yüzden burada da güvenlik amacıyla oturumu kapatıyoruz.
+    async changePassword(payload) {
+      // payload: { currentPassword, newPassword }
+      await api.put('/auth/change-password', payload)
+      await this.logout()
+    },
     async logout() {
       try {
-        // Backend'e çıkış isteği at
         await api.post('/auth/logout')
       } catch (error) {
-        // 401 (Unauthorized) gibi bir hata alınırsa buraya düşer.
-        // Hata fırlatmayı engeller ve console'a bilgi veririz.
         console.warn('Sunucudan çıkış yapılırken hata oluştu, yerel oturum temizleniyor:', error.message)
       } finally {
-        // İstek başarılı olsa da, 401 hatası verse de burası KESİNLİKLE çalışır
-        // Böylece kullanıcı her durumda sistemden yerel olarak çıkış yapmış olur
         this.clearSession()
       }
     },

@@ -3,6 +3,7 @@ import AuthView from '../views/AuthView.vue'
 import CatalogView from '../views/CatalogView.vue'
 import BookDetailView from '../views/BookDetailView.vue'
 import MyBooksView from '../views/MyBooksView.vue'
+import ProfileView from '../views/ProfileView.vue'
 
 const routes = [
   {
@@ -35,6 +36,12 @@ const routes = [
     component: MyBooksView,
     meta: { requiresAuth: true },
   },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: ProfileView,
+    meta: { requiresAuth: true },
+  }
 ]
 
 const router = createRouter({
